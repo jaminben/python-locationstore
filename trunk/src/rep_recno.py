@@ -93,8 +93,7 @@ client = db.DB(client_env)
 while True :
     txn=client_env.txn_begin()
     try :
-        client.open("test", db.DB_RECNO, db.DB_CREATE, flags=db.DB_RDONLY,
-                mode=0666, txn=txn)
+        client.open("test", db.DB_RECNO, db.DB_RDONLY, mode=0666, txn=txn)
     except db.DBRepHandleDeadError :
         txn.abort()
         client.close()

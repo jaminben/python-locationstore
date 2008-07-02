@@ -4,6 +4,7 @@
 import os
 import time
 import unittest
+import cPickle as pickle
 
 from bsddb3 import db
 #----------------------------------------------------------------------
@@ -74,11 +75,12 @@ client_env.repmgr_start(1, db.DB_REP_CLIENT);
 
 
 # wait for the clients to start
-while(not confirmed_startup or not confirmed_master):
+#while(not confirmed_startup or not confirmed_master):
+while( not confirmed_master ):
   time.sleep(0.2)
 
 class testItem:
-  def __init__():
+  def __init__(self):
     self.timestamp = time.time()
     self.type      = "cool_dude"
     self.device_id = 1
@@ -87,6 +89,8 @@ class testItem:
     self.y         =1
     self.z         =1
 
+  def to_pickle(self):
+    return pickle.dumps(self)
 
 print "started"
 
@@ -94,59 +98,78 @@ print "started"
 master=db.DB(master_env)
 txn=master_env.txn_begin()
 master.open("test", db.DB_RECNO, db.DB_CREATE , 0666, txn=txn)
-txn.commit()
 
 
 # setup the secondary DB: time
 timeDB = db.DB(master_env)
-timeDB.open("time_index", db.DB_BTREE, db.DB_CREATE)
+timeDB.set_flags(db.DB_DUPSORT)
+timeDB.open("time_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
 
 # setup the secondary DB: userDB
 userDB = db.DB(master_env)
-userDB.open("user_index", db.DB_BTREE, db.DB_CREATE)
+userDB.set_flags(db.DB_DUPSORT)
+userDB.open("user_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
 
 # setup the secondary DB: userDB
 xyzDB = db.DB(master_env)
-xyzDB.open("xyz_index", db.DB_BTREE, db.DB_CREATE)
+xyzDB.set_flags(db.DB_DUPSORT)
+xyzDB.open("xyz_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
+
+# committ the creation of the DBs
+txn.commit()
+
 
 # indexer functions
 def getTime(priKey, priData):
-  print 'getGenre key: %r data: %r' % (priKey, priData)
-  return priData.timestamp
+#  print 'getGenre key: %r data: %r' % (priKey, priData)
+  pdata = pickle.loads(priData)
+  return str(pdata.timestamp)
 
 def getUser(priKey, priData):
-  print 'getGenre key: %r data: %r' % (priKey, priData)
-  return priData.user
+  #print 'getGenre key: %r data: %r' % (priKey, priData)
+  pdata = pickle.loads(priData)
+  return str(pdata.user)
   
 def getXYZ(priKey, priData):
+  priData = pickle.loads(priData)
   if(priData.x and priData.y and priData.z):
-    return str(priData.x) + "|" + str(priData.y) + "|" + str(priData.z)
+    key = str(priData.x) + "|" + str(priData.y) + "|" + str(priData.z)
+    print key
+    return key
   else:
      return db.DB_DONOTINDEX 
   
-  def getGenre(self, priKey, priData):
-      self.assertEqual(type(priData), type(""))
-      if verbose:
-          print 'getGenre key: %r data: %r' % (priKey, priData)
-      genre = string.split(priData, '|')[2]
-      if genre == 'Blues':
-          
-      else:
-          return genre
 # associate the tables.
-master.associate(timeDB, getTime, db.DB_CREATE)
-master.associate(userDB, getUser, db.DB_CREATE)
-master.associate(xyzDB,  getXYZ, db.DB_CREATE)
+txn=master_env.txn_begin()
+master.associate(xyzDB,  getXYZ, db.DB_CREATE, txn=txn)
+master.associate(timeDB, getTime, db.DB_CREATE, txn=txn)
+master.associate(userDB, getUser, db.DB_CREATE, txn=txn)
+txn.commit()
 
+print "Pre Append"
 # append an entry
-recno = master.append(testItem() )
+
+txn=master_env.txn_begin()
+recno = master.append(testItem().to_pickle())
+txn.commit()
+print "Post append"
+
+
+# make sure the client is started:
+print "Waiting on client startup"
+timeout=time.time()+1
+while((not confirmed_startup or not confirmed_master )and time.time() < timeout):
+#while( not confirmed_master):
+  time.sleep(0.2)
+
+
 
 # connect client:
 client = db.DB(client_env)
 while True :
     txn=client_env.txn_begin()
     try :
-        client.open("test", db.DB_RECNO, db.DB_CREATE, flags=db.DB_RDONLY,
+        client.open("test", db.DB_RECNO, db.DB_RDONLY,
                 mode=0666, txn=txn)
     except db.DBRepHandleDeadError :
         txn.abort()
@@ -158,10 +181,10 @@ while True :
     break
 
 # now read from the client to see if it was replicated
-timeout=time.time()+1
+timeout=time.time()+2
 v=None
 while (time.time()<timeout) and (v==None) :
-    v=client[recno]
+    v=client.get(recno, None)
 
 print v
 
