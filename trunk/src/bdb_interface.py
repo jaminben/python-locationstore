@@ -80,6 +80,13 @@ class BDB_Replicated:
   def destroy(self):
     self.env.close()    
 
+  def getFlags(self):
+    if(self.master):
+      return db.DB_CREATE | db.DB_THREAD
+    else:
+      return db.DB_THREAD
+
+
 class BDB_Simple:
   def __init__(self):
     self.env = db.DBEnv()
@@ -99,7 +106,9 @@ class BDB_Simple:
   def destroy(self):
     self.env.close()  
 
-
+  def getFlags(self):
+    return db.DB_CREATE | db.DB_THREAD
+    
 
 class SimpleLogDB:
   def __init__(self, driver = BDB_Simple() ):
@@ -109,32 +118,35 @@ class SimpleLogDB:
   def open(self,local_path ):
     self.driver.open(local_path)
     
+    flags = self.driver.getFlags()
+    
+    
     # ok setup the rest of the stuff:
     self.data = db.DB(self.driver.env)
     txn=self.driver.env.txn_begin()
-    self.data.open("logs", db.DB_RECNO, db.DB_CREATE , 0666, txn=txn)
+    self.data.open("logs", db.DB_RECNO, flags , 0666, txn=txn)
 
     # setup the secondary DB: time
     self.timeDB = db.DB(self.driver.env)
     self.timeDB.set_flags(db.DB_DUPSORT)
     self.timeDB.set_bt_compare(self.floatCompare)
-    self.timeDB.open("time_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
+    self.timeDB.open("time_index", db.DB_BTREE, flags, txn=txn)
         
     # setup the secondary DB: userDB
     self.userDB = db.DB(self.driver.env)
     self.userDB.set_bt_compare(self.intCompare)    
     self.userDB.set_flags(db.DB_DUPSORT)
-    self.userDB.open("user_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
+    self.userDB.open("user_index", db.DB_BTREE, flags, txn=txn)
 
     # setup the secondary DB: locationDB
     self.xyzDB = db.DB(self.driver.env)
     self.xyzDB.set_flags(db.DB_DUPSORT)
-    self.xyzDB.open("xyz_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
+    self.xyzDB.open("xyz_index", db.DB_BTREE, flags, txn=txn)
 
     # setup the secondary DB: deviceDB
     self.deviceDB = db.DB(self.driver.env)
     self.deviceDB.set_flags(db.DB_DUPSORT)
-    self.deviceDB.open("device_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
+    self.deviceDB.open("device_index", db.DB_BTREE, flags, txn=txn)
 
     # commit the creation of the DBs
     txn.commit()
