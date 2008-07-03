@@ -111,7 +111,9 @@ class BenInterfaceTestCase(unittest.TestCase):
 
   def testReplicatedComplex(self):
     print self.homeDir
-
+    print self.homeDir1
+    print self.homeDir2
+        
     REMOTE_HOST = "127.0.0.1"
     REMOTE_PORT = 9001
     
