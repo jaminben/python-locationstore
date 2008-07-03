@@ -114,12 +114,14 @@ class BenInterfaceTestCase(unittest.TestCase):
     print self.homeDir1
     print self.homeDir2
         
-    REMOTE_HOST = "127.0.0.1"
-    REMOTE_PORT = 9001
+
     
     LOCAL_HOST  = "127.0.0.1"
-    LOCAL_PORT  = 9002
+    LOCAL_PORT  = 9001
 
+    REMOTE_HOST = "127.0.0.1"
+    REMOTE_PORT = 9003
+    
     RREMOTE_HOST = "127.0.0.1"
     RREMOTE_PORT = 9002
 
