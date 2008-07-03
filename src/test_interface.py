@@ -130,7 +130,7 @@ class BenInterfaceTestCase(unittest.TestCase):
     
     brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
     
-    brr2 = BDB_Replicated( RREMOTE_HOST, RREMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [REMOTE_HOST,REMOTE_PORT] ] )
+    #brr2 = BDB_Replicated( RREMOTE_HOST, RREMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [REMOTE_HOST,REMOTE_PORT] ] )
     
     self.a = SimpleLogDB( br )
     self.a.open(self.homeDir)
@@ -138,8 +138,8 @@ class BenInterfaceTestCase(unittest.TestCase):
     self.b = SimpleLogDB( brr )
     self.b.open(self.homeDir1)
 
-    self.c = SimpleLogDB( brr2 )
-    self.c.open(self.homeDir2)
+    #self.c = SimpleLogDB( brr2 )
+    #self.c.open(self.homeDir2)
 
     # do some stuff here
     input_data = {'bob' : 1, 'rad' : 2, 'timestamp' : time.time() }
@@ -152,13 +152,13 @@ class BenInterfaceTestCase(unittest.TestCase):
     back= self.b.get(rec_num)
     assert (back['bob'] == input_data['bob'] )
 
-    back= self.c.get(rec_num)
-    assert (back['bob'] == input_data['bob'] )
+    #back= self.c.get(rec_num)
+    #assert (back['bob'] == input_data['bob'] )
 
 
     self.a.close()
     self.b.close()
-    self.c.close()
+    #self.c.close()
 
 
 #----------------------------------------------------------------------
