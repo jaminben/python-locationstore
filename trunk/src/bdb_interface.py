@@ -126,9 +126,9 @@ class SimpleLogDB:
     # ok setup the rest of the stuff:
     self.data = db.DB(self.driver.env)
     txn=self.driver.env.txn_begin()
-    print "PRE OPENING LOGS"
+    print "PRE OPENING LOGS" + local_path
     self.data.open("logs", db.DB_RECNO, flags , 0666, txn=txn)
-    print "POST LOGS"
+    print "POST LOGS" + local_path
     
     # setup the secondary DB: time
     self.timeDB = db.DB(self.driver.env)
