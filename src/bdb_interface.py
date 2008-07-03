@@ -12,7 +12,6 @@ import cPickle as pickle
 class BDB_Replicated:
   " sets up a master server "
   def __init__(self, local_host, local_port, master = False, priority = 10, client_list = []):
-    self.env = db.DBEnv()
     self.local_host = local_host
     self.local_port = local_port
     self.priority   = 10
@@ -23,6 +22,9 @@ class BDB_Replicated:
     self.ready            = False
     
     self.client_list      = client_list
+    
+    self.env = db.DBEnv()
+
     
   def open(self,local_path):
     # make sure local_path exists first?
@@ -42,6 +44,7 @@ class BDB_Replicated:
     
     # set number of replication sites
     self.env.rep_set_nsites( len(self.client_list) + 1 )
+    print "CLIENT LIST NUM IS:"
     print len(self.client_list) + 1    
 
 
@@ -52,7 +55,7 @@ class BDB_Replicated:
     
     # set the ACK policy for transactions
     self.env.repmgr_set_ack_policy(db.DB_REPMGR_ACKS_ALL)
-    
+
     # set up the notifier
     if(self.master):
       def confirmed_master(a,b,c) :
@@ -97,7 +100,11 @@ class BDB_Replicated:
     if(self.master):
       return db.DB_CREATE | db.DB_THREAD
     else:
-      return db.DB_THREAD | db.DB_RDONLY
+      #return db.DB_CREATE | db.DB_THREAD
+      #return db.DB_CREATE
+      return db.DB_RDONLY
+      #return db.DB_THREAD | db.DB_RDONLY
+      #return  db.DB_CREATE | db.DB_RDONLY
 
 
 class BDB_Simple:
@@ -126,6 +133,8 @@ class BDB_Simple:
 class SimpleLogDB:
   def __init__(self, driver = BDB_Simple() ):
     self.driver = driver
+    self.xyzDB = None
+    self.data  = None
     # setup some variables?
   
   def open(self,local_path ):
@@ -136,6 +145,7 @@ class SimpleLogDB:
  
     flags = self.driver.getFlags()
 
+    print "PRE OPENING LOGS" + local_path
     self.data = db.DB(self.driver.env)
     if(not self.driver.master):
       while True :
@@ -151,9 +161,13 @@ class SimpleLogDB:
 
           txn.commit()
           break
+    else:
+      # not master
+      txn=self.driver.env.txn_begin()
+      self.data.open("logs", db.DB_RECNO, flags , 0666, txn=txn)
+      txn.commit()
 
     # ok setup the rest of the stuff:
-    print "PRE OPENING LOGS" + local_path
     
     print "POST LOGS" + local_path
     
@@ -196,17 +210,24 @@ class SimpleLogDB:
 
   
   def close(self):
-    self.data.close()
-
-    # close secondary indexes
-    self.xyzDB.close()
-    self.timeDB.close()
-    self.userDB.close()
-    self.deviceDB.close()
-    
-    # shut down the driver
-    self.driver.destroy()
-    
+   
+    try: 
+      if(self.data is not None):
+        self.data.close()
+        self.data = None
+      # close secondary indexes
+      if( self.xyzDB is not None):
+        self.xyzDB.close()
+        self.xyzDB = None
+        self.timeDB.close()
+        self.userDB.close()
+        self.deviceDB.close()
+      
+      # shut down the driver
+      self.driver.destroy()
+    except Exception, e:
+      print "GOT EXCEPTION"
+      print e  
   #
   # Accessor Functions
   #

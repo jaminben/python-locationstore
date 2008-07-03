@@ -110,11 +110,6 @@ class BenInterfaceTestCase(unittest.TestCase):
     self.a.close()  
 
   def testReplicatedComplex(self):
-    print self.homeDir
-    print self.homeDir1
-    print self.homeDir2
-        
-
     
     LOCAL_HOST  = "127.0.0.1"
     LOCAL_PORT  = 9003
@@ -127,24 +122,26 @@ class BenInterfaceTestCase(unittest.TestCase):
 
 
     #br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
-    br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT] ] )
-     
+    br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT], [RREMOTE_HOST, RREMOTE_PORT] ] )
+    
     #brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
-    brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT] ] )
-    print "after connecxting using the Brr"
+    #brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 0, [ [LOCAL_HOST, LOCAL_PORT] , [REMOTE_HOST] )
+    #print "after connecxting using the Brr"
 
     #brr2 = BDB_Replicated( RREMOTE_HOST, RREMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [REMOTE_HOST,REMOTE_PORT] ] )
     
     self.a = SimpleLogDB( br )
     self.a.open(self.homeDir)
     self.a.driver.wait_on_ready()
-
+    
+    self.a.append({"asdasdasda": "sdsd"})
+  
     print "---------------------------------------------"
-    self.b = SimpleLogDB( brr )
-    self.b.driver.wait_on_ready()
-    print "PRE OPEN COMMAND CALLED"
-    self.b.open(self.homeDir1)
-    print "POST OPEN COMMAND"
+    #self.b = SimpleLogDB( brr )
+    #self.b.driver.wait_on_ready()
+    #print "PRE OPEN COMMAND CALLED"
+    #self.b.open(self.homeDir1)
+    #print "POST OPEN COMMAND"
     #self.c = SimpleLogDB( brr2 )
     #self.c.open(self.homeDir2)
 
@@ -164,7 +161,7 @@ class BenInterfaceTestCase(unittest.TestCase):
 
 
     self.a.close()
-#    self.b.close()
+    #self.b.close()
     #self.c.close()
 
 
