@@ -22,6 +22,8 @@ class BDB_Replicated:
     self.client_started   = False
     self.ready            = False
     
+    self.client_list      = client_list
+    
   def open(self,local_path):
     # make sure local_path exists first?
     self.env.open(local_path, db.DB_CREATE | db.DB_INIT_TXN
@@ -31,11 +33,11 @@ class BDB_Replicated:
     self.env.repmgr_set_local_site( self.local_host, self.local_port )
 
     # add the clients
-    for i in client_list:
+    for i in self.client_list:
       self.env.repmgr_add_remote_site(i[0], i[1])
     
     # set number of replication sites
-    self.env.rep_set_nsites( len(client_list) + 1 )
+    self.env.rep_set_nsites( len(self.client_list) + 1 )
     
     if(self.master):
       self.env.rep_set_priority(priority)
