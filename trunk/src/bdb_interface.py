@@ -136,13 +136,28 @@ class SimpleLogDB:
  
     flags = self.driver.getFlags()
 
-    # ok setup the rest of the stuff:
     self.data = db.DB(self.driver.env)
-    txn=self.driver.env.txn_begin()
+    if(not self.driver.master):
+      while True :
+          txn=self.driver.env.txn_begin()
+          try :
+              self.data.open("logs", db.DB_RECNO, flags , 0666, txn=txn)
+              
+          except db.DBRepHandleDeadError :
+              txn.abort()
+              self.data.close()
+              self.data = db.DB(self.driver.env)
+              continue
+
+          txn.commit()
+          break
+
+    # ok setup the rest of the stuff:
     print "PRE OPENING LOGS" + local_path
-    self.data.open("logs", db.DB_RECNO, flags , 0666, txn=txn)
+    
     print "POST LOGS" + local_path
     
+    txn=self.driver.env.txn_begin()
     # setup the secondary DB: time
     self.timeDB = db.DB(self.driver.env)
     self.timeDB.set_flags(db.DB_DUPSORT)
