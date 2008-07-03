@@ -32,6 +32,9 @@ class BDB_Replicated:
     
     self.env.repmgr_set_local_site( self.local_host, self.local_port )
 
+    print (self.local_host, self.local_port)
+    print self.client_list
+
     # add the clients
     for i in self.client_list:
       self.env.repmgr_add_remote_site(i[0], i[1])
