@@ -102,8 +102,8 @@ class BDB_Replicated:
     else:
       #return db.DB_CREATE | db.DB_THREAD
       #return db.DB_CREATE
-      return db.DB_RDONLY
-      #return db.DB_THREAD | db.DB_RDONLY
+      #return db.DB_RDONLY
+      return db.DB_THREAD | db.DB_RDONLY
       #return  db.DB_CREATE | db.DB_RDONLY
 
 
@@ -111,7 +111,8 @@ class BDB_Simple:
   def __init__(self):
     self.env = db.DBEnv()
     self.ready = False
-    
+    self.master = True
+ 
   def open(self, local_path):
     self.env.open(local_path, db.DB_CREATE | db.DB_INIT_TXN
             | db.DB_INIT_LOG | db.DB_INIT_MPOOL | db.DB_INIT_LOCK |
@@ -177,19 +178,25 @@ class SimpleLogDB:
     self.timeDB.set_flags(db.DB_DUPSORT)
     self.timeDB.set_bt_compare(self.floatCompare)
     self.timeDB.open("time_index", db.DB_BTREE, flags, txn=txn)
+    txn.commit()
         
     # setup the secondary DB: userDB
+    txn=self.driver.env.txn_begin()
     self.userDB = db.DB(self.driver.env)
     self.userDB.set_bt_compare(self.intCompare)    
     self.userDB.set_flags(db.DB_DUPSORT)
     self.userDB.open("user_index", db.DB_BTREE, flags, txn=txn)
+    txn.commit()
 
     # setup the secondary DB: locationDB
+    txn=self.driver.env.txn_begin()
     self.xyzDB = db.DB(self.driver.env)
     self.xyzDB.set_flags(db.DB_DUPSORT)
     self.xyzDB.open("xyz_index", db.DB_BTREE, flags, txn=txn)
+    txn.commit()
 
     # setup the secondary DB: deviceDB
+    txn=self.driver.env.txn_begin()
     self.deviceDB = db.DB(self.driver.env)
     self.deviceDB.set_flags(db.DB_DUPSORT)
     self.deviceDB.open("device_index", db.DB_BTREE, flags, txn=txn)
@@ -197,7 +204,6 @@ class SimpleLogDB:
     # commit the creation of the DBs
     txn.commit()
 
-        
     # associate the tables.
     txn=self.driver.env.txn_begin()
 
@@ -205,7 +211,6 @@ class SimpleLogDB:
     self.data.associate(self.timeDB, self.getTime, db.DB_CREATE, txn=txn)
     self.data.associate(self.userDB, self.getUser, db.DB_CREATE, txn=txn)
     self.data.associate(self.deviceDB, self.getDevice, db.DB_CREATE, txn=txn)
-
     txn.commit()
 
   
@@ -236,10 +241,12 @@ class SimpleLogDB:
     
     if(item.__class__ != str ): # probably not needed
       item = pickle.dumps(item)   # since we should always get a string
-    
+   
+    print "pre commit" 
     txn   = self.driver.env.txn_begin()
     recno = self.data.append(item)
     txn.commit()
+    
     return recno
   
   def get(self, record):
@@ -278,9 +285,11 @@ class SimpleLogDB:
 #
 
   def getKey(self, data, key):
+    print "#{key} - #{data}"
     q = pickle.loads(data)
     ret = q.get(key, None) 
     if(ret):
+      print "RET " + str(ret)
       return str(ret)
     return db.DB_DONOTINDEX
     
@@ -294,6 +303,7 @@ class SimpleLogDB:
     return self.getKey(priData, 'device') 
 
   def getXYZ(self, priKey, priData):
+    print "getzxt"
     q = pickle.loads(priData)
     if(q.get('x', None) and q.get('y', None) and q.get('z', None) ):
       key = str(q['x']) + "|" + str(q['y']) + "|" + str(q['z'])
@@ -308,6 +318,7 @@ class SimpleLogDB:
     "Compare two floats -- pretty slow "
     # I guess this probably does really slow it down
     # because we'd do float compares a lot!
+    print "floats"
     if(key1 ==''):
       key1 = 0
     if(key2 == ''):
@@ -320,11 +331,15 @@ class SimpleLogDB:
     return 0
 
   def intCompare(self, key1, key2 ):
+    print "ints"
     "Compare two ints"
+    print key1
+    print key2 
     if(key1 ==''):
       key1 = 0
     if(key2 == ''):
       key2 = 0
-    return int(key1) - int(key2)
-
+    ret = int(key1) - int(key2)
+    print ret
+    return ret
 
