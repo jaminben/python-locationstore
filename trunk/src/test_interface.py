@@ -109,7 +109,7 @@ class BenInterfaceTestCase(unittest.TestCase):
     
     self.a.close()  
 
-  def testReplicated(self):
+  def testReplicatedComplex(self):
     print self.homeDir
 
     REMOTE_HOST = "127.0.0.1"
