@@ -37,11 +37,14 @@ class BDB_Replicated:
 
     # add the clients
     for i in self.client_list:
+      print i
       self.env.repmgr_add_remote_site(i[0], i[1])
     
     # set number of replication sites
     self.env.rep_set_nsites( len(self.client_list) + 1 )
-    
+    print len(self.client_list) + 1    
+
+
     if(self.master):
       self.env.rep_set_priority(self.priority)
     else:
@@ -56,6 +59,7 @@ class BDB_Replicated:
         if (b == db.DB_EVENT_REP_MASTER) or (b == db.DB_EVENT_REP_ELECTED) :
           self.confirmed_master = True
           self.ready = True
+          print "master started"
       self.env.set_event_notify(confirmed_master)
       self.env.repmgr_start(1, db.DB_REP_MASTER);
       
@@ -63,8 +67,10 @@ class BDB_Replicated:
       def client_startupdone(a,b,c) :
         if b == db.DB_EVENT_REP_STARTUPDONE :
           self.client_started = True
+          self.ready = True
       self.env.set_event_notify(client_startupdone)
       self.env.repmgr_start(1, db.DB_REP_CLIENT)
+      print "started as client"
 
   # so at the end of this we start the client
   #
@@ -72,13 +78,17 @@ class BDB_Replicated:
   def wait_on_ready(self):
     "waits for it to be ready"
     if(self.ready):
+      print "deemed ready"
       return True
       
-    timeout = time.time() + 2
-    while( ( not self.client_started or not self.confirmed_master ) and not self.ready and timeout < time.time() ):
+    timeout = time.time() + 3
+    while( ( not self.client_started or not self.confirmed_master ) and not self.ready and timeout > time.time() ):
       time.sleep(0.2)
+    print self.client_started
+    print self.confirmed_master
+    print self.ready
     self.ready = True
-    
+    print "deemed ready -- by default"
     
   def destroy(self):
     self.env.close()    
@@ -87,7 +97,7 @@ class BDB_Replicated:
     if(self.master):
       return db.DB_CREATE | db.DB_THREAD
     else:
-      return db.DB_THREAD
+      return db.DB_THREAD | db.DB_RDONLY
 
 
 class BDB_Simple:
@@ -120,7 +130,10 @@ class SimpleLogDB:
   
   def open(self,local_path ):
     self.driver.open(local_path)
-    
+   
+    # probably should wait on ready here 
+    self.driver.wait_on_ready()
+ 
     flags = self.driver.getFlags()
 
     # ok setup the rest of the stuff:
