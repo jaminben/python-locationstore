@@ -34,18 +34,18 @@ class BDB_Replicated:
     
     self.env.repmgr_set_local_site( self.local_host, self.local_port )
 
-    print (self.local_host, self.local_port)
-    print self.client_list
+    #print (self.local_host, self.local_port)
+    #print self.client_list
 
     # add the clients
     for i in self.client_list:
-      print i
+      #print i
       self.env.repmgr_add_remote_site(i[0], i[1])
     
     # set number of replication sites
     self.env.rep_set_nsites( len(self.client_list) + 1 )
-    print "CLIENT LIST NUM IS:"
-    print len(self.client_list) + 1    
+    #print "CLIENT LIST NUM IS:"
+    #print len(self.client_list) + 1    
 
 
     if(self.master):
@@ -62,7 +62,7 @@ class BDB_Replicated:
         if (b == db.DB_EVENT_REP_MASTER) or (b == db.DB_EVENT_REP_ELECTED) :
           self.confirmed_master = True
           self.ready = True
-          print "master started"
+          #print "master started"
       self.env.set_event_notify(confirmed_master)
       self.env.repmgr_start(1, db.DB_REP_MASTER);
       
@@ -73,7 +73,7 @@ class BDB_Replicated:
           self.ready = True
       self.env.set_event_notify(client_startupdone)
       self.env.repmgr_start(1, db.DB_REP_CLIENT)
-      print "started as client"
+      #print "started as client"
 
   # so at the end of this we start the client
   #
@@ -81,17 +81,17 @@ class BDB_Replicated:
   def wait_on_ready(self):
     "waits for it to be ready"
     if(self.ready):
-      print "deemed ready"
+      #print "deemed ready"
       return True
       
     timeout = time.time() + 3
     while( ( not self.client_started or not self.confirmed_master ) and not self.ready and timeout > time.time() ):
       time.sleep(0.2)
-    print self.client_started
-    print self.confirmed_master
-    print self.ready
+    #print self.client_started
+    #print self.confirmed_master
+    #print self.ready
     self.ready = True
-    print "deemed ready -- by default"
+    #print "deemed ready -- by default"
     
   def destroy(self):
     self.env.close()    
@@ -146,7 +146,7 @@ class SimpleLogDB:
  
     flags = self.driver.getFlags()
 
-    print "PRE OPENING LOGS" + local_path
+    #print "PRE OPENING LOGS" + local_path
     self.data = db.DB(self.driver.env)
     if(not self.driver.master):
       while True :
@@ -170,7 +170,7 @@ class SimpleLogDB:
 
     # ok setup the rest of the stuff:
     
-    print "POST LOGS" + local_path
+    #print "POST LOGS" + local_path
     
     txn=self.driver.env.txn_begin()
     # setup the secondary DB: time
@@ -240,7 +240,7 @@ class SimpleLogDB:
       # shut down the driver
       self.driver.destroy()
     except Exception, e:
-      print "GOT EXCEPTION"
+      #print "GOT EXCEPTION"
       print e  
   #
   # Accessor Functions
@@ -251,7 +251,7 @@ class SimpleLogDB:
     if(item.__class__ != str ): # probably not needed
       item = pickle.dumps(item)   # since we should always get a string
    
-    print "pre commit" 
+    #print "pre commit" 
     txn   = self.driver.env.txn_begin()
     recno = self.data.append(item)
     txn.commit()
@@ -294,7 +294,11 @@ class SimpleLogDB:
 #
 
   def getKey(self, data, key):
-    print "#{key} - #{data}"
+    #
+    # If these were BYTE operations they'd be much faster
+    #
+
+    #print "#{key} - #{data}"
     q = pickle.loads(data)
     ret = q.get(key, None) 
     if(ret):
@@ -321,7 +325,8 @@ class SimpleLogDB:
        return db.DB_DONOTINDEX
 #
 # Comparison Functions
-#  
+# 
+# these are really slow 
   
   def floatCompare(self, key1, key2 ):
     "Compare two floats -- pretty slow "
