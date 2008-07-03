@@ -117,13 +117,13 @@ class BenInterfaceTestCase(unittest.TestCase):
 
     
     LOCAL_HOST  = "127.0.0.1"
-    LOCAL_PORT  = 9001
+    LOCAL_PORT  = 9005
 
     REMOTE_HOST = "127.0.0.1"
-    REMOTE_PORT = 9003
+    REMOTE_PORT = 9006
     
     RREMOTE_HOST = "127.0.0.1"
-    RREMOTE_PORT = 9002
+    RREMOTE_PORT = 9007
 
 
     br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
