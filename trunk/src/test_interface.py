@@ -44,30 +44,56 @@ class testItem:
 
 class BenInterfaceTestCase(unittest.TestCase):
 
-
-    def setUp(self):
-        self.filename = self.__class__.__name__ + '.db'
-        self.homeDir = get_new_environment_path()
-        self.a = None
+  def setUp(self):
+      self.filename = self.__class__.__name__ + '.db'
+      self.homeDir = get_new_environment_path()
+      self.a = None
+      
+  def tearDown(self):
+      if(self.a):
+        self.a.close()
         
-    def tearDown(self):
-        if(self.a):
-          self.a.close()
-          
-        test_support.rmtree(self.homeDir)
+      test_support.rmtree(self.homeDir)
 
-    def testSimple(self):
-      print self.homeDir
-      self.a = SimpleLogDB()
-      self.a.open(self.homeDir)
+  def testSimpleLocal(self):
+    print self.homeDir
+    self.a = SimpleLogDB()
+    self.a.open(self.homeDir)
+  
+    # do some stuff here
+    input_data = {'bob' : 1, 'rad' : 2, 'timestamp' : time.time() }
     
-      # do some stuff here
-      res = self.a.append({'bob' : 1, 'rad' : 2, 'timestamp' : time.time() })
-      
-      print self.a.get(res)
-      
-      
-      self.a.close()
+    rec_num = self.a.append( input_data )
+    
+    back= self.a.get(rec_num)
+    
+    assert (back['bob'] == input_data['bob'] )
+    
+    self.a.close()
+  
+  def testReplicated(self):
+    print self.homeDir
+    
+    REMOTE_HOST = "127.0.0.1"
+    LOCAL_HOST  = "127.0.0.1"
+    LOCAL_PORT  = 9000
+    REMOTE_HOST = 9001
+    
+    br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT] ] )
+    
+    self.a = SimpleLogDB( br )
+    self.a.open(self.homeDir)
+  
+    # do some stuff here
+    input_data = {'bob' : 1, 'rad' : 2, 'timestamp' : time.time() }
+    
+    rec_num = self.a.append( input_data )
+    
+    back= self.a.get(rec_num)
+    
+    assert (back['bob'] == input_data['bob'] )
+    
+    self.a.close()  
 
 #----------------------------------------------------------------------
 
