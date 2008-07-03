@@ -122,13 +122,14 @@ class SimpleLogDB:
     self.driver.open(local_path)
     
     flags = self.driver.getFlags()
-    
-    
+
     # ok setup the rest of the stuff:
     self.data = db.DB(self.driver.env)
     txn=self.driver.env.txn_begin()
+    print "PRE OPENING LOGS"
     self.data.open("logs", db.DB_RECNO, flags , 0666, txn=txn)
-
+    print "POST LOGS"
+    
     # setup the secondary DB: time
     self.timeDB = db.DB(self.driver.env)
     self.timeDB.set_flags(db.DB_DUPSORT)
