@@ -128,9 +128,9 @@ class BenInterfaceTestCase(unittest.TestCase):
 
     br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
     
-    brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT] ] )
+    brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
     
-    brr2 = BDB_Replicated( RREMOTE_HOST, RREMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT] ] )
+    brr2 = BDB_Replicated( RREMOTE_HOST, RREMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT], [ [REMOTE_HOST,REMOTE_PORT] ] )
     
     self.a = SimpleLogDB( br )
     self.a.open(self.homeDir)
