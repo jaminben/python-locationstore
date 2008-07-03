@@ -79,8 +79,10 @@ class DBReplicationManager(unittest.TestCase):
     def test01_basic_replication(self) :
         master_port = test_support.find_unused_port()
         self.dbenvMaster.repmgr_set_local_site("127.0.0.1", master_port)
+        
         client_port = test_support.find_unused_port()
         self.dbenvClient.repmgr_set_local_site("127.0.0.1", client_port)
+        
         self.dbenvMaster.repmgr_add_remote_site("127.0.0.1", client_port)
         
         self.dbenvClient.repmgr_add_remote_site("127.0.0.1", master_port)
