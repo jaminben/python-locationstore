@@ -22,7 +22,7 @@ class BDB_Replicated:
     self.client_started   = False
     self.ready            = False
     
-  def open(local_path):
+  def open(self,local_path):
     # make sure local_path exists first?
     self.env.open(local_path, db.DB_CREATE | db.DB_INIT_TXN
             | db.DB_INIT_LOG | db.DB_INIT_MPOOL | db.DB_INIT_LOCK |
