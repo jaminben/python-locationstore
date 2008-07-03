@@ -219,19 +219,15 @@ class SimpleLogDB:
     return db.DB_DONOTINDEX
     
   def getTime(self, priKey, priData):
-    print "got xyz"
     return self.getKey(priData, 'timestamp')
  
   def getUser(self, priKey, priData):
-    print "got xyz"
     return self.getKey(priData, 'user')
 
   def getDevice(self, priKey, priData):
-    print "got xyz"
     return self.getKey(priData, 'device') 
 
   def getXYZ(self, priKey, priData):
-    print "got xyz"
     q = pickle.loads(priData)
     if(q.get('x', None) and q.get('y', None) and q.get('z', None) ):
       key = str(q['x']) + "|" + str(q['y']) + "|" + str(q['z'])
