@@ -43,10 +43,10 @@ client_env.rep_set_nsites(2)
 
 # set priorities
 master_env.rep_set_priority(10)
-client_env.rep_set_priority(0)
-
-# set transaction replication policy
 master_env.repmgr_set_ack_policy(db.DB_REPMGR_ACKS_ALL)
+
+client_env.rep_set_priority(0)
+# set transaction replication policy
 client_env.repmgr_set_ack_policy(db.DB_REPMGR_ACKS_ALL)
 
 confimed_master = False
