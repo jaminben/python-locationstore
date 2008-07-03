@@ -40,7 +40,7 @@ class BDB_Replicated:
     self.env.rep_set_nsites( len(self.client_list) + 1 )
     
     if(self.master):
-      self.env.rep_set_priority(priority)
+      self.env.rep_set_priority(self.priority)
     else:
       self.env.rep_set_priority(0)  # for now we want only one master  
     
