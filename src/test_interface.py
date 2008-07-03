@@ -57,15 +57,15 @@ class BenInterfaceTestCase(unittest.TestCase):
         test_support.rmtree(self.homeDir)
 
     def testSimple(self):
-      print "here"
       print self.homeDir
       self.a = SimpleLogDB()
-      print "post open"
       self.a.open(self.homeDir)
-      print "opened it"
-      
+    
       # do some stuff here
-      self.a.append({'bob' : 1, 'rad' : 2, 'timestamp' : time.time() })
+      res = self.a.append({'bob' : 1, 'rad' : 2, 'timestamp' : time.time() })
+      
+      print self.a.get(res)
+      
       
       self.a.close()
 
