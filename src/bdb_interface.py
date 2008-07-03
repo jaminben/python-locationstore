@@ -134,10 +134,9 @@ class SimpleLogDB:
     self.deviceDB.set_flags(db.DB_DUPSORT)
     self.deviceDB.open("device_index", db.DB_BTREE, db.DB_CREATE | db.DB_THREAD, txn=txn)
 
-
     # commit the creation of the DBs
     txn.commit()
-    print "after driver open 2"
+
         
     # associate the tables.
     txn=self.driver.env.txn_begin()
@@ -148,7 +147,7 @@ class SimpleLogDB:
     self.data.associate(self.deviceDB, self.getDevice, db.DB_CREATE, txn=txn)
 
     txn.commit()
-    print "after driver open 22"
+
   
   def close(self):
     self.data.close()
