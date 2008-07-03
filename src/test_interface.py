@@ -121,34 +121,23 @@ class BenInterfaceTestCase(unittest.TestCase):
     RREMOTE_PORT = 9009
 
 
-    #br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
-    br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT], [RREMOTE_HOST, RREMOTE_PORT] ] )
-    
-    #brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 0, [ [LOCAL_HOST, LOCAL_PORT] , [REMOTE_HOST] )
-    #print "after connecxting using the Brr"
-
-    #brr2 = BDB_Replicated( RREMOTE_HOST, RREMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [REMOTE_HOST,REMOTE_PORT] ] )
-    
-    self.a = SimpleLogDB( br )
-    self.a.open(self.homeDir)
+    br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT] ] )
+    a = SimpleLogDB( br )
+    a.open(self.homeDir)
 
     brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT]   ] )
-    self.b = SimpleLogDB( brr )
-
-    self.a.driver.wait_on_ready()
-    self.b.driver.wait_on_ready()
+    b = SimpleLogDB( brr )
+    b.open(self.homeDir1)
     
-    #print "PRE OPEN COMMAND CALLED"
-    self.b.open(self.homeDir1)
     #print "POST OPEN COMMAND"
     #self.c = SimpleLogDB( brr2 )
     #self.c.open(self.homeDir2)
 
     # do some stuff here
     input_data = {'bob' : 1, 'rad' : 2, 'timestamp' : time.time() }
-    rec_num = self.a.append( input_data )
+    rec_num = a.append( input_data )
 
-    back= self.a.get(rec_num)
+    back= a.get(rec_num)
 
     assert (back['bob'] == input_data['bob'] )
 
@@ -159,8 +148,8 @@ class BenInterfaceTestCase(unittest.TestCase):
     #assert (back['bob'] == input_data['bob'] )
 
 
-    self.a.close()
-    #self.b.close()
+    a.close()
+    b.close()
     #self.c.close()
 
   def test_really_simple(self):
