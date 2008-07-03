@@ -211,6 +211,15 @@ class SimpleLogDB:
     self.data.associate(self.timeDB, self.getTime, db.DB_CREATE, txn=txn)
     self.data.associate(self.userDB, self.getUser, db.DB_CREATE, txn=txn)
     self.data.associate(self.deviceDB, self.getDevice, db.DB_CREATE, txn=txn)
+    
+    # I probably need the following queries:
+    #  time-range
+    # user, time-range
+    # device, time-range
+    # 
+    # I also need to do some benchmarks to figure out if this is actually useful.
+    
+    #self.data.associate(self.devicetimeDB, self.getDevice, db.DB_CREATE, txn=txn)
     txn.commit()
 
   
