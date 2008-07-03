@@ -28,7 +28,7 @@ class BDB_Replicated:
             | db.DB_INIT_LOG | db.DB_INIT_MPOOL | db.DB_INIT_LOCK |
             db.DB_INIT_REP | db.DB_RECOVER | db.DB_THREAD, 0666)
     
-    self.env.repmgr_set_local_site( self.local_host, self.master_port )
+    self.env.repmgr_set_local_site( self.local_host, self.local_port )
 
     # add the clients
     for i in client_list:
