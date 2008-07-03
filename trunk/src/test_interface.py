@@ -124,7 +124,6 @@ class BenInterfaceTestCase(unittest.TestCase):
     #br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
     br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT], [RREMOTE_HOST, RREMOTE_PORT] ] )
     
-    #brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT],  [RREMOTE_HOST,RREMOTE_PORT] ] )
     #brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 0, [ [LOCAL_HOST, LOCAL_PORT] , [REMOTE_HOST] )
     #print "after connecxting using the Brr"
 
@@ -132,15 +131,15 @@ class BenInterfaceTestCase(unittest.TestCase):
     
     self.a = SimpleLogDB( br )
     self.a.open(self.homeDir)
+
+    brr  = BDB_Replicated( REMOTE_HOST,REMOTE_PORT, False, 10, [ [LOCAL_HOST, LOCAL_PORT]   ] )
+    self.b = SimpleLogDB( brr )
+
     self.a.driver.wait_on_ready()
+    self.b.driver.wait_on_ready()
     
-    self.a.append({"asdasdasda": "sdsd"})
-  
-    print "---------------------------------------------"
-    #self.b = SimpleLogDB( brr )
-    #self.b.driver.wait_on_ready()
     #print "PRE OPEN COMMAND CALLED"
-    #self.b.open(self.homeDir1)
+    self.b.open(self.homeDir1)
     #print "POST OPEN COMMAND"
     #self.c = SimpleLogDB( brr2 )
     #self.c.open(self.homeDir2)
@@ -163,6 +162,39 @@ class BenInterfaceTestCase(unittest.TestCase):
     self.a.close()
     #self.b.close()
     #self.c.close()
+
+  def test_really_simple(self):
+    REMOTE_HOST = "127.0.0.1"
+    LOCAL_HOST  = "127.0.0.1"
+    LOCAL_PORT  = 9000
+    REMOTE_PORT = 9001
+
+    REMOTE_PORT2 = 9002
+    br = BDB_Replicated( LOCAL_HOST, LOCAL_PORT, True, 10, [ [REMOTE_HOST,REMOTE_PORT], [REMOTE_HOST, REMOTE_PORT2] ] )
+
+    a = SimpleLogDB( br )
+#    a.open("test_dir1")
+    a.open(self.homeDir)
+
+
+    br1 = BDB_Replicated( REMOTE_HOST, REMOTE_PORT, False, 10, [ [LOCAL_HOST,LOCAL_PORT] , [REMOTE_HOST, REMOTE_PORT2] ] )
+
+    b = SimpleLogDB( br1 )
+    #b.open("test_dir2")
+    b.open(self.homeDir1)
+
+
+    # ok down here I can append stuff
+    print "0--------------------------------------"
+
+    #rec1 =  b.append({'user' : 1 , 'timestamp' : time.time() })
+    print "first"
+    rec1 =  a.append({'user' : '1' , 'timestamp' : time.time() })
+    print "2first"
+    rec1 =  a.append({'dsfdsuser' : '1'  })
+    print "3first"
+    rec2 = a.append({'user' : '2' })
+
 
 
 #----------------------------------------------------------------------
